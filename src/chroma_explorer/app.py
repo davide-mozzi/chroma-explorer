@@ -80,7 +80,8 @@ def settings_dialog(path_status: Literal["empty", "invalid", "valid"] = "valid")
 
 
 st.set_page_config(layout="wide")
-st.logo(image="assets/logo.png", icon_image="assets/icon.png", size="large")
+# TODO: how to package the logo when using `uv tool install`?
+# st.logo(image="assets/logo.png", icon_image="assets/icon.png", size="large")
 
 with st.bottom, st.container(horizontal=True, horizontal_alignment="center"):
     st.caption(f"Chroma Explorer \u00b7 Version {VERSION}", width="content")
@@ -101,12 +102,12 @@ with st.sidebar:
         settings_dialog()
 
     with st.form(key="create_collection"):
-        st.subheader(body="Create a new collection")
+        st.subheader(body="Create a new collection", anchor=False)
         st.text_input(label="Name", key="create_collection__name")
         st.form_submit_button(label="Create", on_click=create_collection)
 
     with st.container(border=True):
-        st.subheader(body="Select a collection")
+        st.subheader(body="Select a collection", anchor=False)
         selected_collection = st.selectbox(
             label="Name",
             options=get_collection_names(),
@@ -118,7 +119,7 @@ with st.sidebar:
 
     if selected_collection:
         with st.form("chroma_get_form"):
-            st.subheader("Explore data")
+            st.subheader("Explore data", anchor=False)
             ids_text = st.text_input("IDs", placeholder="id_1, id_2, id_3")
             where_text = st.text_area("Metadata filter (`where`)", value="", placeholder='{"category": "news"}')
             where_document_text = st.text_area(
@@ -202,7 +203,7 @@ if selected_collection:
             if len(dataframe_state.selection.rows) > 0:
                 selected_doc_data = df.iloc[dataframe_state.selection.rows[0]]
 
-                st.header(f"Document {selected_doc_data['id']}")
+                st.header(f"Document `{selected_doc_data['id']}`", anchor=False)
 
                 if "metadatas" in selected_doc_data:
                     with st.expander(label="Metadata"):
