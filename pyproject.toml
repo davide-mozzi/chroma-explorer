@@ -1,0 +1,21 @@
+[project]
+name = "chroma-explorer"
+version = "0.1.1"
+description = "A Streamlit-based application to explore the content of a ChromaDB vectorstore"
+readme = "README.md"
+authors = [
+    { name = "Davide Mozzi", email = "davide.mozzi@polimi.it" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "chromadb>=1.5.9",
+    "pydantic-settings>=2.15.0",
+    "streamlit>=1.62.0",
+]
+
+[project.scripts]
+chroma-explorer = "chroma_explorer:run"
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"
