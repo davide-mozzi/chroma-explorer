@@ -64,19 +64,18 @@ def settings_dialog(path_status: Literal["empty", "invalid", "valid"] = "valid")
         st.session_state["chroma_path"] = path
         st.rerun()
 
-    if not path:
-        st.error(title="Missing path", body="Please insert a path to a ChromaDB directory.")
-    elif path_status == "invalid":
-        st.error(title="Invalid path", body="The given path does not point to a valid directory.")
-    elif path_status == "empty":
-        st.warning(
-            title="Empty directory",
-            body="The given path points to an empty or non-existent directory. If you want you can create an empty "
-            "ChromaDB vectorstore there.",
-        )
-        if st.button(label="Create an empty vector store", type="primary"):
-            create_vector_store(path)
-            st.rerun()
+    if path:
+        if path_status == "invalid":
+            st.error(title="Invalid path", body="The given path does not point to a valid directory.")
+        elif path_status == "empty":
+            st.warning(
+                title="Empty directory",
+                body="The given path points to an empty or non-existent directory. If you want you can create an empty "
+                "ChromaDB vectorstore there.",
+            )
+            if st.button(label="Create an empty vector store", type="primary"):
+                create_vector_store(path)
+                st.rerun()
 
 
 st.set_page_config(layout="wide")
@@ -101,8 +100,8 @@ with st.sidebar:
     if st.button("Settings", type="tertiary", icon=":material/settings:"):
         settings_dialog()
 
-    with st.form(key="create_collection"):
-        st.subheader(body="Create a new collection", anchor=False)
+    with st.expander(label="Create a collection", type="compact"), st.form(key="create_collection"):
+        st.subheader(body="Create a collection", anchor=False)
         st.text_input(label="Name", key="create_collection__name")
         st.form_submit_button(label="Create", on_click=create_collection)
 
@@ -118,51 +117,75 @@ with st.sidebar:
     include: Include | None = None
 
     if selected_collection:
-        with st.form("chroma_get_form"):
-            st.subheader("Explore data", anchor=False)
-            ids_text = st.text_input("IDs", placeholder="id_1, id_2, id_3")
-            where_text = st.text_area("Metadata filter (`where`)", value="", placeholder='{"category": "news"}')
-            where_document_text = st.text_area(
-                "Document filter (`where_document`)",
-                value="",
-                placeholder='{"$contains": "python"}',
-            )
-            include = st.multiselect(
-                "Include",
-                options=["documents", "metadatas", "embeddings"],
-                default=["documents", "metadatas"],
-            )
-            limit = st.number_input("Limit", min_value=1, value=100, step=1)
-            offset = st.number_input("Offset", min_value=0, value=0, step=1)
+        with st.container(border=True):
+            with st.form("chroma_get_form", border=False):
+                st.subheader("Explore data", anchor=False)
+                ids_text = st.text_input("IDs", placeholder="id_1, id_2, id_3")
+                where_text = st.text_area("Metadata filter (`where`)", value="", placeholder='{"category": "news"}')
+                where_document_text = st.text_area(
+                    "Document filter (`where_document`)",
+                    value="",
+                    placeholder='{"$contains": "python"}',
+                )
+                include = st.multiselect(
+                    "Include",
+                    options=["documents", "metadatas", "embeddings"],
+                    default=["documents", "metadatas"],
+                )
+                limit = st.number_input("Limit", min_value=1, value=100, step=1)
+                offset = st.number_input("Offset", min_value=0, value=0, step=1)
 
-            if st.form_submit_button("Load data"):
-                try:
-                    ids = [item.strip() for item in ids_text.split(",") if item.strip()] or None
-                    where = json.loads(where_text) if where_text.strip() else None
-                    where_document = json.loads(where_document_text) if where_document_text.strip() else None
-                    st.session_state["data"] = st.session_state.client.get_collection(selected_collection).get(
-                        ids=ids,
-                        where=where,
-                        where_document=where_document,
-                        include=include,
-                        limit=int(limit),
-                        offset=int(offset),
-                    )
-                except json.JSONDecodeError as exc:
-                    st.error(f"Invalid JSON filter: {exc}")
+                if st.form_submit_button("Load data", width="stretch"):
+                    try:
+                        ids = [item.strip() for item in ids_text.split(",") if item.strip()] or None
+                        where = json.loads(where_text) if where_text.strip() else None
+                        where_document = json.loads(where_document_text) if where_document_text.strip() else None
+                        st.session_state["data"] = st.session_state.client.get_collection(selected_collection).get(
+                            ids=ids,
+                            where=where,
+                            where_document=where_document,
+                            include=include,
+                            limit=int(limit),
+                            offset=int(offset),
+                        )
+                    except json.JSONDecodeError as exc:
+                        st.error(f"Invalid JSON filter: {exc}")
+
+            if st.button("Clear results", type="tertiary", width="stretch"):
+                st.session_state["data"] = None
 
 
 if selected_collection:
-    st.header(body=f"Collection: `{selected_collection}`", anchor=False)
+    with st.container(horizontal=True, vertical_alignment="center"):
+        st.subheader(body=f"Collection: `{selected_collection}`", anchor=False, width="content")
 
-    with st.container(horizontal=True):
-        with st.popover(label="Rename", width=100), st.form(key="rename_collection", border=False):
+        with (
+            st.popover(label="Rename", icon=":material/edit:", width=100, type="tertiary"),
+            st.form(key="rename_collection", border=False),
+        ):
             st.text_input(label="New name", key="rename_collection__new_name")
-            st.form_submit_button(label="Rename", on_click=rename_collection)
+            st.form_submit_button(label="Rename", width="stretch", on_click=rename_collection)
 
-        with st.popover(label="Delete", width=100, type="primary"), st.form(key="delete_collection", border=False):
+        with (
+            st.popover(label="Delete", icon=":material/delete:", width=100, type="tertiary"),
+            st.form(key="delete_collection", border=False),
+        ):
             st.warning(title="Are you sure??", body="Deleting a collection is **irreversible**!")
-            st.form_submit_button(label="Delete", type="primary", on_click=delete_collection)
+            st.form_submit_button(label="Delete", type="primary", width="stretch", on_click=delete_collection)
+
+    document_count_text = f"Total documents: {st.session_state.client.get_collection(selected_collection).count()}" + (
+        f" \u00b7 Filtered documents: {len(d['ids'])}" if (d := st.session_state.get("data")) else ""
+    )
+    st.caption(document_count_text, width="content")
+
+    # with st.container(horizontal=True):
+    #     with st.popover(label="Rename", width=100), st.form(key="rename_collection", border=False):
+    #         st.text_input(label="New name", key="rename_collection__new_name")
+    #         st.form_submit_button(label="Rename", on_click=rename_collection)
+
+    #     with st.popover(label="Delete", width=100, type="primary"), st.form(key="delete_collection", border=False):
+    #         st.warning(title="Are you sure??", body="Deleting a collection is **irreversible**!")
+    #         st.form_submit_button(label="Delete", type="primary", on_click=delete_collection)
 
     if (data := st.session_state.get("data")) and include:
         rows = []
@@ -189,7 +212,6 @@ if selected_collection:
         col1, col2 = st.columns(2)
 
         with col1:
-            st.caption(f"Found {len(df)} documents")
             dataframe_state = st.dataframe(
                 df,
                 width="stretch",
@@ -213,4 +235,4 @@ if selected_collection:
                     with st.container(border=True):
                         st.markdown(body=selected_doc_data["documents"])
 else:
-    st.header(body=":material/arrow_left_alt: select a collection", anchor=False)
+    st.markdown(body="No collection selected", help="Please select a collection in the sidebar")
