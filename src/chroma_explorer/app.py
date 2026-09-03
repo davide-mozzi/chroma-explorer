@@ -78,7 +78,7 @@ def settings_dialog(path_status: Literal["empty", "invalid", "valid"] = "valid")
                 st.rerun()
 
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", initial_sidebar_state=350)
 # TODO: how to package the logo when using `uv tool install`?
 # st.logo(image="assets/logo.png", icon_image="assets/icon.png", size="large")
 
