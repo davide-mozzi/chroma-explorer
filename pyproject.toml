@@ -1,6 +1,6 @@
 [project]
 name = "chroma-explorer"
-version = "0.1.4"
+version = "0.1.5"
 description = "A Streamlit-based application to explore the content of a ChromaDB vectorstore"
 readme = "README.md"
 authors = [
