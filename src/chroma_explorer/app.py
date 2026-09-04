@@ -229,7 +229,7 @@ if selected_collection:
 
                 if "metadatas" in selected_doc_data:
                     with st.expander(label="Metadata"):
-                        st.code(body=json.dumps(json.loads(selected_doc_data["metadatas"]), indent=2))
+                        st.json(body=selected_doc_data["metadatas"])
 
                 if "documents" in selected_doc_data:
                     with st.container(border=True):
