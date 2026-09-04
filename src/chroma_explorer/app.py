@@ -1,6 +1,7 @@
 import json
 import os
 from importlib.metadata import version
+from importlib.resources import as_file, files
 from pathlib import Path
 from typing import Any, Literal
 
@@ -79,8 +80,11 @@ def settings_dialog(path_status: Literal["empty", "invalid", "valid"] = "valid")
 
 
 st.set_page_config(layout="wide", initial_sidebar_state=350)
-# TODO: how to package the logo when using `uv tool install`?
-# st.logo(image="assets/logo.png", icon_image="assets/icon.png", size="large")
+logo = files("chroma_explorer").joinpath("assets/logo.png")
+logo_icon = files("chroma_explorer").joinpath("assets/logo_icon.png")
+
+with as_file(logo) as logo_path, as_file(logo_icon) as logo_icon_path:
+    st.logo(image=logo_path, icon_image=logo_icon_path, size="large")
 
 with st.bottom, st.container(horizontal=True, horizontal_alignment="center"):
     st.caption(f"Chroma Explorer \u00b7 Version {version('chroma-explorer')}", width="content")
@@ -177,15 +181,6 @@ if selected_collection:
         f" \u00b7 Filtered documents: {len(d['ids'])}" if (d := st.session_state.get("data")) else ""
     )
     st.caption(document_count_text, width="content")
-
-    # with st.container(horizontal=True):
-    #     with st.popover(label="Rename", width=100), st.form(key="rename_collection", border=False):
-    #         st.text_input(label="New name", key="rename_collection__new_name")
-    #         st.form_submit_button(label="Rename", on_click=rename_collection)
-
-    #     with st.popover(label="Delete", width=100, type="primary"), st.form(key="delete_collection", border=False):
-    #         st.warning(title="Are you sure??", body="Deleting a collection is **irreversible**!")
-    #         st.form_submit_button(label="Delete", type="primary", on_click=delete_collection)
 
     if (data := st.session_state.get("data")) and include:
         rows = []
