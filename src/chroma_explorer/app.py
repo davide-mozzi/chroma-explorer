@@ -1,5 +1,6 @@
 import json
 import os
+from importlib.metadata import version
 from pathlib import Path
 from typing import Any, Literal
 
@@ -8,7 +9,6 @@ import streamlit as st
 from chromadb import Include, PersistentClient
 from chromadb.api import ClientAPI
 
-from chroma_explorer import VERSION
 from chroma_explorer.chroma import (
     create_collection,
     create_vector_store,
@@ -22,15 +22,15 @@ from chroma_explorer.errors import (
     MissingPathError,
     NonExistentPathError,
 )
-from chroma_explorer.settings import Settings
+from chroma_explorer.settings import edit_settings, get_settings
 
 
 @st.cache_resource
 def get_chroma_client(chroma_path: str | None, refresh_count: int) -> ClientAPI:
     if chroma_path:
-        settings = Settings(path=chroma_path)
+        settings = edit_settings(path=chroma_path)
     else:
-        settings = Settings()
+        settings = get_settings()
 
     if not settings.path:
         st.session_state["chroma_path"] = ""
@@ -83,7 +83,7 @@ st.set_page_config(layout="wide", initial_sidebar_state=350)
 # st.logo(image="assets/logo.png", icon_image="assets/icon.png", size="large")
 
 with st.bottom, st.container(horizontal=True, horizontal_alignment="center"):
-    st.caption(f"Chroma Explorer \u00b7 Version {VERSION}", width="content")
+    st.caption(f"Chroma Explorer \u00b7 Version {version('chroma-explorer')}", width="content")
 
 try:
     st.session_state.client = get_chroma_client(
