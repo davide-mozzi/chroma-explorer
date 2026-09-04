@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Check out the tagged commit
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -22,13 +22,13 @@ jobs:
         run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.0.1
 
       - name: Build distributions
         run: uv build .
 
       - name: Create draft GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           draft: true
           generate_release_notes: true
